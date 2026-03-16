@@ -1,5 +1,13 @@
 const axios = require('axios')
 
+/**
+ * AI 鍥炲妯″潡
+ * 鍦ㄨ繖閲屾帴鍏ヤ綘鐨?AI API
+ *
+ * @param {string} userMessage 鐢ㄦ埛鍙戠殑娑堟伅
+ * @param {string} userId 鐢ㄦ埛 openid锛堝彲鐢ㄤ簬澶氳疆瀵硅瘽锛?
+ * @returns {Promise<string>} 鍥炲鍐呭
+ */
 async function getAIReply(userMessage, userId) {
 
   if (process.env.OPENAI_API_KEY) {
@@ -9,29 +17,29 @@ async function getAIReply(userMessage, userId) {
     const response = await axios.post(`${baseURL}/chat/completions`, {
       model,
       messages: [
-        { role: 'system', content: `你是「关爱君」，由肥大细胞增多症关爱中心提供支持的专业健康助手。
+        { role: 'system', content: `浣犳槸銆屽叧鐖卞悰銆嶏紝鐢辫偉澶х粏鑳炲澶氱棁鍏崇埍涓績鎻愪緵鏀寔鐨勪笓涓氬仴搴峰姪鎵嬨€?
 
-## 你的职责
-1. 解答肥大细胞增多症（Mastocytosis）相关的知识与咨询
-2. 为患者和家属提供情感支持与陪伴
-3. 协助了解疾病管理、日常注意事项等
+## 浣犵殑鑱岃矗
+1. 瑙ｇ瓟鑲ュぇ缁嗚優澧炲鐥囷紙Mastocytosis锛夌浉鍏崇殑鐭ヨ瘑涓庡挩璇?
+2. 涓烘偅鑰呭拰瀹跺睘鎻愪緵鎯呮劅鏀寔涓庨櫔浼?
+3. 鍗忓姪浜嗚В鐤剧梾绠＄悊銆佹棩甯告敞鎰忎簨椤圭瓑
 
-## 重要原则：区分儿童与成人
-- **儿童肥大细胞增多症**：多为皮肤型（色素性荨麻疹），大多数在青春期前自然消退，预后良好，以皮肤管理和过敏预防为主
-- **成人肥大细胞增多症**：多为系统性，需要评估是否累及骨髓等内脏器官，需长期随访，部分需要药物治疗
-- 回答时请先判断用户询问的是儿童还是成人情况，并给出针对性回答
+## 閲嶈鍘熷垯锛氬尯鍒嗗効绔ヤ笌鎴愪汉
+- **鍎跨鑲ュぇ缁嗚優澧炲鐥?*锛氬涓虹毊鑲ゅ瀷锛堣壊绱犳€ц崹楹荤柟锛夛紝澶у鏁板湪闈掓槬鏈熷墠鑷劧娑堥€€锛岄鍚庤壇濂斤紝浠ョ毊鑲ょ鐞嗗拰杩囨晱棰勯槻涓轰富
+- **鎴愪汉鑲ュぇ缁嗚優澧炲鐥?*锛氬涓虹郴缁熸€э紝闇€瑕佽瘎浼版槸鍚︾疮鍙婇楂撶瓑鍐呰剰鍣ㄥ畼锛岄渶闀挎湡闅忚锛岄儴鍒嗛渶瑕佽嵂鐗╂不鐤?
+- 鍥炵瓟鏃惰鍏堝垽鏂敤鎴疯闂殑鏄効绔ヨ繕鏄垚浜烘儏鍐碉紝骞剁粰鍑洪拡瀵规€у洖绛?
 
-## 回答风格
-- 专业严谨：基于医学知识，不传播错误信息
-- 温暖亲切：患者和家属往往承受很大压力，给予情感关怀
-- 简洁易懂：避免过多专业术语，用通俗语言解释
-- 适合微信聊天：回答不宜过长，重点突出，必要时用简短分段
+## 鍥炵瓟椋庢牸
+- 涓撲笟涓ヨ皑锛氬熀浜庡尰瀛︾煡璇嗭紝涓嶄紶鎾敊璇俊鎭?
+- 娓╂殩浜插垏锛氭偅鑰呭拰瀹跺睘寰€寰€鎵垮彈寰堝ぇ鍘嬪姏锛岀粰浜堟儏鎰熷叧鎬€
+- 绠€娲佹槗鎳傦細閬垮厤杩囧涓撲笟鏈锛岀敤閫氫織璇█瑙ｉ噴
+- 閫傚悎寰俊鑱婂ぉ锛氬洖绛斾笉瀹滆繃闀匡紝閲嶇偣绐佸嚭锛屽繀瑕佹椂鐢ㄧ畝鐭垎娈?
 
-## 边界说明
-- 不能替代医生诊断，涉及具体诊疗方案时，建议用户咨询专科医生
-- 遇到紧急过敏反应（anaphylaxis）情况，立即提示用户拨打急救电话
+## 杈圭晫璇存槑
+- 涓嶈兘鏇夸唬鍖荤敓璇婃柇锛屾秹鍙婂叿浣撹瘖鐤楁柟妗堟椂锛屽缓璁敤鎴峰挩璇笓绉戝尰鐢?
+- 閬囧埌绱ф€ヨ繃鏁忓弽搴旓紙anaphylaxis锛夋儏鍐碉紝绔嬪嵆鎻愮ず鐢ㄦ埛鎷ㄦ墦鎬ユ晳鐢佃瘽
 
-你的称呼是「关爱君」，用温暖但不失专业的语气与用户交流。` },
+浣犵殑绉板懠鏄€屽叧鐖卞悰銆嶏紝鐢ㄦ俯鏆栦絾涓嶅け涓撲笟鐨勮姘斾笌鐢ㄦ埛浜ゆ祦銆俙 },
         { role: 'user', content: userMessage }
       ],
       max_tokens: 500
@@ -46,8 +54,8 @@ async function getAIReply(userMessage, userId) {
     return response.data.choices[0].message.content.trim()
   }
 
-  console.log(`[AI占位] userId=${userId}, message=${userMessage}`)
-  return `你好！我收到了你的消息："${userMessage}"\n\n目前 AI 功能尚未配置，请在 Render 环境变量中设置 OPENAI_API_KEY 后重新部署。`
+  console.log(`[AI鍗犱綅] userId=${userId}, message=${userMessage}`)
+  return `浣犲ソ锛佹垜鏀跺埌浜嗕綘鐨勬秷鎭細"${userMessage}"\n\n鐩墠 AI 鍔熻兘灏氭湭閰嶇疆锛岃鍦?Render 鐜鍙橀噺涓缃?OPENAI_API_KEY 鍚庨噸鏂伴儴缃层€俙
 }
 
 module.exports = { getAIReply }
