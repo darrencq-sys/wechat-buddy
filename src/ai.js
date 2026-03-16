@@ -1,4 +1,3 @@
-const https = require('https')
 const axios = require('axios')
 
 const SYSTEM_PROMPT = '你是「关爱君」，由肥大细胞增多症关爱中心提供支持的专业健康助手。\n\n' +
@@ -16,21 +15,44 @@ const SYSTEM_PROMPT = '你是「关爱君」，由肥大细胞增多症关爱中
   '- 遇到紧急过敏反应（anaphylaxis）情况，立即提示用户拨打急救电话\n\n' +
   '你的称呼是「关爱君」，用温暖但不失专业的语气与用户交流。'
 
+// 每个用户最多保留最近 10 轮对话（20条消息）
+const MAX_HISTORY = 10
+// 对话历史存储：userId -> [ {role, content}, ... ]
+const userHistories = new Map()
+
+function getHistory(userId) {
+  if (!userHistories.has(userId)) {
+    userHistories.set(userId, [])
+  }
+  return userHistories.get(userId)
+}
+
+function addToHistory(userId, role, content) {
+  const history = getHistory(userId)
+  history.push({ role: role, content: content })
+  // 超出上限时，删除最早的一轮（user + assistant 各一条）
+  if (history.length > MAX_HISTORY * 2) {
+    history.splice(0, 2)
+  }
+}
+
 async function getAIReply(userMessage, userId) {
 
-  // MiniMax API
   if (process.env.OPENAI_API_KEY) {
     const apiKey = process.env.OPENAI_API_KEY
     const baseURL = process.env.OPENAI_BASE_URL || 'https://api.minimaxi.com/v1/text/chatcompletion_v2'
-    const model = process.env.OPENAI_MODEL || 'M2-her'
+    const model = process.env.OPENAI_MODEL || 'MiniMax-Text-01'
+
+    // 构建带历史的消息列表
+    const history = getHistory(userId)
+    const messages = [{ role: 'system', content: SYSTEM_PROMPT }]
+      .concat(history)
+      .concat([{ role: 'user', content: userMessage }])
 
     const response = await axios.post(baseURL, {
       model: model,
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: userMessage }
-      ],
-      max_completion_tokens: 500
+      messages: messages,
+      max_tokens: 500
     }, {
       headers: {
         'Authorization': 'Bearer ' + apiKey,
@@ -39,7 +61,13 @@ async function getAIReply(userMessage, userId) {
       timeout: 15000
     })
 
-    return response.data.choices[0].message.content.trim()
+    const reply = response.data.choices[0].message.content.trim()
+
+    // 保存本轮对话到历史
+    addToHistory(userId, 'user', userMessage)
+    addToHistory(userId, 'assistant', reply)
+
+    return reply
   }
 
   console.log('[AI占位] userId=' + userId + ', message=' + userMessage)
